@@ -19,15 +19,14 @@ git_integration = GithubIntegration(
     app_key,
 )
 
-def pr_opened_event(repo, payload):
-    pr = repo.get_issue(number=payload['pull_request']['number'])
-    author = pr.user.login
+def issue_opened_event(repo, payload):
+    issue = repo.get_issue(number=payload['issue']['number'])
+    author = issue.user.login
 
     
-    response = f"Thanks for opening this pull request, @{author}! " \
+    response = f"Thanks for opening this issue, @{author}! " \
                 f"The repository maintainers will look into it ASAP! :speech_balloon:"
-    pr.create_comment(f"{response}")
-    pr.add_to_labels("needs review")
+    issue.create_comment(f"{response}")
 
 @app.route("/", methods=['POST'])
 def bot():
@@ -46,9 +45,9 @@ def bot():
     )
     repo = git_connection.get_repo(f"{owner}/{repo_name}")
 
-    # Check if the event is a GitHub pull request creation event
-    if all(k in payload.keys() for k in ['action', 'pull_request']) and payload['action'] == 'opened':
-        pr_opened_event(repo, payload)
+    # Check if the event is a GitHub issue creation event
+    if all(k in payload.keys() for k in ['action', 'issue']) and payload['action'] == 'opened':
+        issue_opened_event(repo, payload)
 
     return "", 204
 
